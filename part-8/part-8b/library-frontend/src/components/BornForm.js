@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
-import { useMutation } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 
-import { EDIT_AUTHOR } from '../queries'
+import { EDIT_AUTHOR, ALL_AUTHORS } from '../queries'
 
 const BornForm = () => {
   const [name, setName] = useState('')
   const [born, setBorn] = useState('')
 
   const [ changeBorn ] = useMutation(EDIT_AUTHOR)
+
+  const result = useQuery(ALL_AUTHORS, {
+    pollInterval: 2000
+  })
 
   const submit = async (event) => {
     event.preventDefault()
@@ -22,11 +26,11 @@ const BornForm = () => {
     <div>
     <h2>Set birthyear</h2>
     <form onSubmit={submit}>
-      <div>
-        name <input 
-          value={name} 
-          onChange={({target}) => setName(target.value)} />
-      </div>
+    <select value={name} onChange={({target}) => setName(target.value)}> 
+    {result.data.allAuthors.map(a =>
+            <option value={a.name}>{a.name}</option>
+          )}
+    </select>
       <div>
         born <input 
           value={born} 
