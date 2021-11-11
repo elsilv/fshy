@@ -1,4 +1,4 @@
-const { ApolloServer, gql } = require('apollo-server')
+const { ApolloServer, gql, UserInputError } = require('apollo-server')
 const mongoose = require('mongoose')
 const Book = require('./models/book')
 const Author = require('./models/author')
@@ -144,7 +144,7 @@ const resolvers = {
             const genreFilter = books.filter(book => book.genres.includes(args.genre))
 
             if(!args.author) {return genreFilter}
-            if(!args.genre) {return authorFilter}
+            if(!args.genre)  {return authorFilter}
             return authorFilter && genreFilter
          
       }
@@ -154,7 +154,7 @@ const resolvers = {
         const books = await Book.find( {author: root.id })
         return books.lenght
       }
-      },
+    },
     Book: {
       author: async (root) => {
         const author = await Author.findById(root.author)
@@ -173,12 +173,18 @@ const resolvers = {
           author = await new Author({ name: args.author }).save()
         }
   
-        const book = await new Book({
-          title: args.title,
-          published: args.published,
-          author,
-          genres: args.genres
-        }).save()
+        try {
+          const book = await new Book({
+            title: args.title,
+            published: args.published,
+            author,
+            genres: args.genres
+          }).save() 
+        } catch(error) {
+            throw new UserInputError(error.message, {
+            invalidArgs: args
+          })
+        }
   
         return book
         },
@@ -186,10 +192,19 @@ const resolvers = {
         editAuthor: async (root, args) => {
           let author = await Author.findOne({ name: args.name })
     
-          if (author) {
-            author.born = args.setBornTo
-            await author.save()
+          if (!author) {
+            throw new UserInputError('No user found')
           }
+
+          try {
+            author.born = args.setBornTo
+            await author.save() 
+          } catch(error) {
+              throw new UserInputError(error.message, {
+                invalidArgs: args
+              })
+            }
+          
     
           return author
     }}
