@@ -15,8 +15,7 @@ const BornForm = () => {
 
   const submit = async (event) => {
     event.preventDefault()
-
-    changeBorn({ variables: { name, born } })
+    changeBorn({ variables: { name, born: born.length > 0 ? born : null } })
 
     setName('')
     setBorn('')
