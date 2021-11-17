@@ -1,35 +1,33 @@
-
-import React, { useState } from 'react'
+import React from 'react'
 import { useQuery } from '@apollo/client'
-import { ALL_BOOKS } from '../queries'
+import { CURRENT_USER, ALL_BOOKS } from '../queries'
 
-const Books = (props) => {
-  const [genre, setGenre] = useState(null)
-  const result = useQuery(ALL_BOOKS, {
+const Recommend = (props) => {
+  const result = useQuery(CURRENT_USER, {
     pollInterval: 2000
   })
 
-  const variableResult = useQuery(ALL_BOOKS, {
-    refetchQueries: [ {query: ALL_BOOKS, variables: { genre: genre }}]
-  })
-
+  const bookResult = useQuery(ALL_BOOKS)
 
   if(result.loading) {
     return (<div>loading...</div>)
   }
-
+  
   if (!props.show) {
     return null
   }
 
-  var genreArray = variableResult.data.allBooks.map(a => a.genres)
-  var filteredGenres = genreArray.flat().filter((x,y) => !genreArray.flat().includes(x, y+1))
+  if (!result.data) {
+    return (<div>data missing...</div>)
+  }
 
-  var filteredBooks = result.data.allBooks.filter(a => a.genres.includes(genre))
+  var genre = result.data.me.favoriteGenre
+  var filteredBooks = bookResult.data.allBooks.filter(a => a.genres.includes(genre))
 
   return (
     <div>
-      <h2>books</h2>
+      <h2>recommendations</h2>
+      <p>books in your favorite genre: <b>{result.data.me.favoriteGenre}</b></p>
 
       <table>
         <tbody>
@@ -58,15 +56,8 @@ const Books = (props) => {
         </tbody>
       </table>
 
-      <h2>By genre</h2>
-
-      {filteredGenres.map(a =>
-          <button value={a} onClick={() => setGenre(a)}>{a}</button>
-      )}
-  
-  <p></p>
     </div>
   )
 }
 
-export default Books
+export default Recommend
