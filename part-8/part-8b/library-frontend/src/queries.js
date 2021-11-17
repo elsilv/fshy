@@ -20,6 +20,7 @@ query {
     author {
         name
     }
+    genres
     }
 }
 `

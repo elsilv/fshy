@@ -119,14 +119,14 @@ const typeDefs = gql`
   type Author {
       name: String!
       born: Int
-      bookCount: Int!
+      bookCount: Int
       id: ID!
   }
 
   type Mutation {
       addBook(
           title: String!
-          author: String!
+          author: String
           published: Int
           genres: [String]
       ) : Book
@@ -199,27 +199,26 @@ const resolvers = {
 
         if(!currentUser) {
           throw new AuthenticationError("not authenticated")
-        }
+        } 
   
         if (!author) {
-          author = await new Author({ name: args.author }).save()
+          author = await new Author({ name: args.author  }).save()
         }
   
         try {
-          const book = await new Book({
+          return await new Book({
             title: args.title,
             published: args.published,
             author,
             genres: args.genres
           }).save()
-          await currentUser.save() 
+           await currentUser.save() 
         } catch(error) {
             throw new UserInputError(error.message, {
             invalidArgs: args
           })
         }
   
-        return book
         },
 
         editAuthor: async (root, args, context) => {
