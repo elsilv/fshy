@@ -1,7 +1,8 @@
 const { createServer } = require("http");
 const express = require("express");
+const cors = require('cors')
 const { execute, subscribe } = require("graphql");
-const { ApolloServer, gql } = require("apollo-server-express");
+const { ApolloServer, gql, UserInputError, AuthenticationError } = require("apollo-server-express");
 const { PubSub } = require("graphql-subscriptions");
 const { SubscriptionServer } = require("subscriptions-transport-ws");
 const { makeExecutableSchema } = require("@graphql-tools/schema");
@@ -29,7 +30,15 @@ mongoose.connect(MONGODB_URI)
   const PORT = 4000;
   const pubsub = new PubSub();
   const app = express();
+  app.use(cors());
   const httpServer = createServer(app);
+
+  var corsOptions = {
+    origin: 'http://localhost:3000/',
+    credentials: true ,
+    allowedHeaders: ['Authorization', 'Content-Type', 'apollographql-client-name', 'Access-Control-Allow-Origin']
+  };
+  app.use(cors(corsOptions));
 
   const typeDefs = gql`
   type User {
@@ -214,9 +223,19 @@ mongoose.connect(MONGODB_URI)
 
   const server = new ApolloServer({
     schema,
+    context: async ({ req }) => {
+      const auth = req ? req.headers.authorization : null
+      if(auth && auth.toLowerCase().startsWith('bearer ')) {
+        const decodedToken = jwt.verify(
+          auth.substring(7), JWT_SECRET
+        )
+        const currentUser = await User.findById(decodedToken.id)
+        return { currentUser }
+      }
+    }
   });
   await server.start();
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app, cors: true });
 
   SubscriptionServer.create(
     { schema, execute, subscribe },
@@ -224,7 +243,7 @@ mongoose.connect(MONGODB_URI)
   );
 
   httpServer.listen(PORT, () => {
-    console.log(`Server ready at localhost:${PORT}${server.graphqlPath}`);
+    console.log(`Server ready at localhost:${PORT}`);
     console.log(`Subscriptions ready at ws://localhost:${PORT}${server.graphqlPath}`);
   });
 

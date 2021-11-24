@@ -4,8 +4,8 @@ import Books from './components/Books'
 import NewBook from './components/NewBook'
 import LoginForm from './components/LoginForm'
 import Recommend from './components/Recommend'
-import { useApolloClient, useQuery } from '@apollo/client'
-import { ALL_AUTHORS } from './queries'
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client'
+import { ALL_AUTHORS, BOOK_ADDED } from './queries'
 
 const Notify = ({errorMessage}) => {
   if(!errorMessage) { return null }
@@ -30,6 +30,13 @@ const App = () => {
     }, 5000)
   }
 
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      window.alert(subscriptionData)
+      console.log(subscriptionData)
+    }
+  })
+
   if(result.loading) {
     return <div>loading...</div>
   }
@@ -47,7 +54,7 @@ const App = () => {
         <h2>Login</h2>
         <LoginForm 
           setToken={setToken}
-          setError={notify} />
+           />
       </div>
     )
   } 
