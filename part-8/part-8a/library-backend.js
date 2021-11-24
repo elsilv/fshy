@@ -59,9 +59,14 @@ mongoose.connect(MONGODB_URI)
   type Author {
       name: String!
       born: Int
-      bookCount: Int
       id: ID!
   }
+  type AuthorBookCount {
+    name: String!
+    born: Int
+    bookCount: Int
+    id: ID!
+}
   type Mutation {
       addBook(
           title: String!
@@ -87,6 +92,7 @@ mongoose.connect(MONGODB_URI)
       authorCount: Int!
       allBooks(author: String, genre: String): [Book]!
       allAuthors: [Author!]!
+      allAuthorsWithBookCount: [AuthorBookCount!]!
       me: User
   }
 
@@ -100,6 +106,7 @@ mongoose.connect(MONGODB_URI)
       bookCount: () => Book.collection.countDocuments(),
       authorCount: () => Author.collection.countDocuments(),
       allAuthors: async () => await Author.find(),
+      allAuthorsWithBookCount: async () => await Author.find(),
       me: (root, args, context) => {
         return context.currentUser
       },
@@ -118,7 +125,7 @@ mongoose.connect(MONGODB_URI)
          
       }
     },
-    Author: {
+    AuthorBookCount: {
       bookCount: async (root) => {
         const books = await Book.find({ author: root.id })
         return books.lenght

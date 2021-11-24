@@ -1,10 +1,10 @@
 import React from 'react'
 import { useQuery } from '@apollo/client'
-import { ALL_AUTHORS } from '../queries'
+import { ALL_AUTHORS_BOOKCOUNT } from '../queries'
 import BornForm from './BornForm'
 
 const Authors = (props) => {
-  const result = useQuery(ALL_AUTHORS, {
+  const result = useQuery(ALL_AUTHORS_BOOKCOUNT, {
     pollInterval: 2000
   })
   
@@ -35,7 +35,7 @@ const Authors = (props) => {
               books
             </th>
           </tr>
-          {result.data.allAuthors.map(a =>
+          {result.data.allAuthorsWithBookCount.map(a =>
             <tr key={a.name}>
               <td>{a.name}</td>
               <td>{a.born}</td>

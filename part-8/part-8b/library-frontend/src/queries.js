@@ -5,6 +5,16 @@ query {
     allAuthors {
     name,
     born,
+    id
+    }
+}
+`
+
+export const ALL_AUTHORS_BOOKCOUNT = gql`
+query {
+    allAuthorsWithBookCount {
+    name,
+    born,
     bookCount,
     id
     }
